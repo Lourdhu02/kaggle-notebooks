@@ -6,7 +6,7 @@
 
 <br/>
 
-[![Notebooks Published](https://img.shields.io/badge/Notebooks%20Published-0%20%2F%20150-22c55e?style=for-the-badge&logo=jupyter&logoColor=white)](https://www.kaggle.com/lourduraju)
+[![Notebooks Published](https://img.shields.io/badge/Notebooks%20Published-1%20%2F%20150-22c55e?style=for-the-badge&logo=jupyter&logoColor=white)](https://www.kaggle.com/lourduraju)
 [![Kaggle Profile](https://img.shields.io/badge/Kaggle-Lourdu%20Raju-20BEFF?style=for-the-badge&logo=kaggle&logoColor=white)](https://www.kaggle.com/lourduraju)
 [![GitHub Stars](https://img.shields.io/github/stars/Lourdhu02/kaggle-notebooks?style=for-the-badge&logo=github&logoColor=white&color=f59e0b)](https://github.com/Lourdhu02/kaggle-notebooks)
 [![Last Commit](https://img.shields.io/github/last-commit/Lourdhu02/kaggle-notebooks?style=for-the-badge&logo=git&logoColor=white&color=6366f1)](https://github.com/Lourdhu02/kaggle-notebooks/commits)
