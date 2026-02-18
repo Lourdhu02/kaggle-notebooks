@@ -1,4 +1,4 @@
-<div align="center">
+<div>
 
 # Kaggle Notebooks — 150 Notebook Challenge
 
@@ -21,7 +21,7 @@ This repository is the source and version history for all notebooks published on
 
 No fixed schedule. Published when ready.
 
-**Started:** February 2025 &nbsp;|&nbsp; **Target:** 150 notebooks &nbsp;|&nbsp; **Published:** 0
+**Started:** February 2025 &nbsp;|&nbsp; **Target:** 150 notebooks &nbsp;|&nbsp; **Published:** 1
 
 ---
 
@@ -30,13 +30,12 @@ No fixed schedule. Published when ready.
 | Category | Notebooks | Published |
 |----------|-----------|-----------|
 | Computer Vision | 30 | 0 |
-| Machine Learning | 30 | 0 |
+| Machine Learning | 30 | 1 |
 | Deep Learning (GPU) | 28 | 0 |
 | NLP | 24 | 0 |
 | Math & Statistics | 24 | 0 |
 | EDA & Visualization | 14 | 0 |
-| **Total** | **150** | **0** |
-
+| **Total** | **150** | **1** |
 ---
 
 ## Tracking

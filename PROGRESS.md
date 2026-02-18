@@ -12,11 +12,11 @@ Last updated: February 18, 2026
 
 ## By Category
 
-| Category | Published |
-|----------|-----------|
-| computer-vision | 0 |
-| machine-learning | 1 |
-| deep-learning-gpu | 0 |
-| nlp | 0 |
-| math-statistics | 0 |
-| eda-visualization | 0 |
+| Category | Planned | Published |
+|----------|---------|-----------|
+| Computer Vision | 30 | 0 |
+| Machine Learning | 30 | 1 |
+| Deep Learning (GPU) | 28 | 0 |
+| NLP | 24 | 0 |
+| Math & Statistics | 24 | 0 |
+| EDA & Visualization | 14 | 0 |

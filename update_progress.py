@@ -5,7 +5,7 @@ Run this after every Kaggle publish + before every git push.
 Tracks:
   - How many notebooks published (based on a published/ subfolder or a published.txt log)
   - How many datasets published
-  - Auto-updates README.md badges
+  - Auto-updates README.md badges + Topics Covered table   ← FIXED
   - Writes PROGRESS.md
   - Writes CHANGELOG.md
 """
@@ -17,14 +17,20 @@ from collections import defaultdict
 
 BASE = Path(__file__).parent
 
-CATEGORIES = [
-    "computer-vision",
-    "machine-learning",
-    "deep-learning-gpu",
-    "nlp",
-    "math-statistics",
-    "eda-visualization",
+# ── Category config ──────────────────────────────────────────────────────────
+# Each entry:  (folder-name,  display-name,  planned-count)
+CATEGORY_CONFIG = [
+    ("computer-vision",    "Computer Vision",      30),
+    ("machine-learning",   "Machine Learning",     30),
+    ("deep-learning-gpu",  "Deep Learning (GPU)",  28),
+    ("nlp",                "NLP",                  24),
+    ("math-statistics",    "Math & Statistics",    24),
+    ("eda-visualization",  "EDA & Visualization",  14),
 ]
+
+CATEGORIES     = [c[0] for c in CATEGORY_CONFIG]
+DISPLAY_NAMES  = {c[0]: c[1] for c in CATEGORY_CONFIG}
+PLANNED_COUNTS = {c[0]: c[2] for c in CATEGORY_CONFIG}
 
 DATASET_FOLDERS = [
     "datasets/image-datasets",
@@ -37,6 +43,8 @@ DATASET_FOLDERS = [
 TARGET_NOTEBOOKS = 150
 TARGET_DATASETS  = 30
 
+
+# ── Counting helpers ─────────────────────────────────────────────────────────
 
 def count_notebooks(status: str = "all") -> dict:
     """
@@ -68,81 +76,156 @@ def count_datasets(status: str = "published") -> int:
     return total
 
 
-def update_readme(notebooks_done: int, datasets_done: int):
-    path = BASE / "README.md"
-    if not path.exists():
-        return
-    content = path.read_text(encoding="utf-8")
+# ── README updaters ───────────────────────────────────────────────────────────
 
-    updated = re.sub(
+def update_badges(content: str, notebooks_done: int, datasets_done: int) -> str:
+    """Update the two shield.io badge counts in the README."""
+    content = re.sub(
         r"Notebooks%20Published-\d+%20%2F%20\d+",
         f"Notebooks%20Published-{notebooks_done}%20%2F%20{TARGET_NOTEBOOKS}",
-        content
+        content,
     )
-    updated = re.sub(
+    content = re.sub(
         r"Datasets%20Published-\d+%20%2F%20\d+",
         f"Datasets%20Published-{datasets_done}%20%2F%20{TARGET_DATASETS}",
-        updated
+        content,
+    )
+    return content
+
+
+def update_topics_table(content: str, nb_published: dict) -> str:
+    """
+    Rewrite the Topics Covered table rows with live published counts.
+
+    Looks for the markdown table that contains the header line:
+        | Category | Notebooks | Published |
+    and replaces every data row + the Total row.
+    """
+    total_planned   = sum(PLANNED_COUNTS.values())
+    total_published = sum(nb_published.values())
+
+    # Build the replacement body rows
+    data_rows = []
+    for cat in CATEGORIES:
+        display  = DISPLAY_NAMES[cat]
+        planned  = PLANNED_COUNTS[cat]
+        pub      = nb_published.get(cat, 0)
+        data_rows.append(f"| {display} | {planned} | {pub} |")
+    data_rows.append(f"| **Total** | **{total_planned}** | **{total_published}** |")
+
+    new_rows_block = "\n".join(data_rows)
+
+    # Regex: match the header + separator + all following pipe-rows of this table
+    pattern = re.compile(
+        r"(\| Category \| Notebooks \| Published \|\s*\n"   # header row
+        r"\|[-| ]+\|\s*\n)"                                  # separator row
+        r"(?:\|.*\|\s*\n?)+",                                # all data rows
+        re.IGNORECASE,
     )
 
-    if updated != content:
-        path.write_text(updated, encoding="utf-8")
+    def replacer(m):
+        return m.group(1) + new_rows_block + "\n"
+
+    updated, n = pattern.subn(replacer, content)
+    if n == 0:
+        print("  [warn] Topics Covered table not found — check README formatting")
+    return updated
+
+
+def update_published_count_line(content: str, notebooks_done: int) -> str:
+    """Update the 'Published: N' line in the About section."""
+    return re.sub(
+        r"(\*\*Published:\*\*\s*)\d+",
+        rf"\g<1>{notebooks_done}",
+        content,
+    )
+
+
+def update_readme(nb_published: dict, datasets_done: int):
+    path = BASE / "README.md"
+    if not path.exists():
+        print("  [skip] README.md not found")
+        return
+
+    notebooks_done = sum(nb_published.values())
+    content = path.read_text(encoding="utf-8")
+    original = content
+
+    content = update_badges(content, notebooks_done, datasets_done)
+    content = update_topics_table(content, nb_published)
+    content = update_published_count_line(content, notebooks_done)
+
+    if content != original:
+        path.write_text(content, encoding="utf-8")
         print(f"  [updated] README.md -> {notebooks_done} notebooks / {datasets_done} datasets")
     else:
         print("  [no change] README.md already up to date")
 
 
+# ── PROGRESS.md ───────────────────────────────────────────────────────────────
+
 def write_progress_md(nb_by_cat: dict, notebooks_done: int, datasets_done: int):
     today = date.today().strftime("%B %d, %Y")
-    lines = []
-    lines.append("# Progress Log\n")
-    lines.append(f"Last updated: {today}\n")
-    lines.append("")
-    lines.append("## Summary\n")
-    lines.append("| Metric | Value |")
-    lines.append("|--------|-------|")
-    lines.append(f"| Notebooks Published | {notebooks_done} / {TARGET_NOTEBOOKS} |")
-    lines.append(f"| Datasets Published  | {datasets_done} / {TARGET_DATASETS} |")
-    lines.append("")
-    lines.append("## By Category\n")
-    lines.append("| Category | Published |")
-    lines.append("|----------|-----------|")
-    for cat, count in nb_by_cat.items():
-        lines.append(f"| {cat} | {count} |")
+    lines = [
+        "# Progress Log\n",
+        f"Last updated: {today}\n",
+        "",
+        "## Summary\n",
+        "| Metric | Value |",
+        "|--------|-------|",
+        f"| Notebooks Published | {notebooks_done} / {TARGET_NOTEBOOKS} |",
+        f"| Datasets Published  | {datasets_done} / {TARGET_DATASETS} |",
+        "",
+        "## By Category\n",
+        "| Category | Planned | Published |",
+        "|----------|---------|-----------|",
+    ]
+    for cat in CATEGORIES:
+        display = DISPLAY_NAMES[cat]
+        planned = PLANNED_COUNTS[cat]
+        pub     = nb_by_cat.get(cat, 0)
+        lines.append(f"| {display} | {planned} | {pub} |")
     lines.append("")
     (BASE / "PROGRESS.md").write_text("\n".join(lines), encoding="utf-8")
     print("  [done] PROGRESS.md")
 
 
+# ── CHANGELOG.md ──────────────────────────────────────────────────────────────
+
 def write_changelog_md():
-    """Read git log for [publish] commits and format as changelog."""
-    lines = []
-    lines.append("# Changelog\n")
-    lines.append("Track every notebook and dataset published to Kaggle.\n")
-    lines.append("")
-    lines.append("## How to add an entry\n")
-    lines.append("Entries are auto-added via commit messages starting with `[publish]` or `[dataset]`.\n")
-    lines.append("Run this script after every push to keep it updated.\n")
+    lines = [
+        "# Changelog\n",
+        "Track every notebook and dataset published to Kaggle.\n",
+        "",
+        "## How to add an entry\n",
+        "Entries are auto-added via commit messages starting with `[publish]` or `[dataset]`.\n",
+        "Run this script after every push to keep it updated.\n",
+    ]
     (BASE / "CHANGELOG.md").write_text("\n".join(lines), encoding="utf-8")
     print("  [done] CHANGELOG.md")
 
 
+# ── Main ──────────────────────────────────────────────────────────────────────
+
 def main():
     print("\n=== update_progress.py ===\n")
 
-    nb_published  = count_notebooks("published")
-    ds_published  = count_datasets("published")
+    nb_published   = count_notebooks("published")
+    nb_planned     = count_notebooks("all")
+    ds_published   = count_datasets("published")
     notebooks_done = sum(nb_published.values())
 
-    for cat, count in nb_published.items():
-        planned = count_notebooks("all").get(cat, 0)
-        print(f"  {cat:<30}  {count} published / {planned} planned")
+    for cat in CATEGORIES:
+        pub     = nb_published.get(cat, 0)
+        planned = nb_planned.get(cat, 0)
+        display = DISPLAY_NAMES[cat]
+        print(f"  {display:<25}  {pub} published / {planned} planned")
 
     print(f"\n  Notebooks published : {notebooks_done} / {TARGET_NOTEBOOKS}")
     print(f"  Datasets published  : {ds_published} / {TARGET_DATASETS}\n")
 
     print("Updating README.md ...")
-    update_readme(notebooks_done, ds_published)
+    update_readme(nb_published, ds_published)
 
     print("Writing PROGRESS.md ...")
     write_progress_md(nb_published, notebooks_done, ds_published)
@@ -152,7 +235,7 @@ def main():
 
     print("\nAll done. Now run:\n")
     print("  git add .")
-    print("  git commit -m \"[publish] category/difficulty/notebook-name\"")
+    print('  git commit -m "[publish] category/difficulty/notebook-name"')
     print("  git push origin main\n")
 
 
