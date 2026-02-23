@@ -1,13 +1,13 @@
 # Progress Log
 
-Last updated: February 20, 2026
+Last updated: February 23, 2026
 
 
 ## Summary
 
 | Metric | Value |
 |--------|-------|
-| Notebooks Published | 6 / 150 |
+| Notebooks Published | 8 / 150 |
 | Datasets Published  | 0 / 30 |
 
 ## By Category
@@ -15,8 +15,8 @@ Last updated: February 20, 2026
 | Category | Planned | Published |
 |----------|---------|-----------|
 | Computer Vision | 30 | 0 |
-| Machine Learning | 30 | 3 |
-| Deep Learning (GPU) | 28 | 1 |
+| Machine Learning | 30 | 4 |
+| Deep Learning (GPU) | 28 | 2 |
 | NLP | 24 | 1 |
 | Math & Statistics | 24 | 0 |
 | EDA & Visualization | 14 | 1 |
