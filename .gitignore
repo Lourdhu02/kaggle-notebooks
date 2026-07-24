@@ -1,8 +1,5 @@
+*.csv
+*.zip
 __pycache__/
-*.py[cod]
-.ipynb_checkpoints/
-.DS_Store
-Thumbs.db
-.venv/
-venv/
-*.log
+*.pyc
+data/
